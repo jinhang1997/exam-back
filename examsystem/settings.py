@@ -1,3 +1,4 @@
+
 """
 Django settings for examsystem project.
 
@@ -112,7 +113,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'Asia/Shanghai'
 
 USE_I18N = True
 
@@ -127,3 +128,14 @@ USE_TZ = True
 # STATIC_ROOT = '/home/jinhang/examsystem/frontend/statics/'
 
 STATIC_URL= '/frontend/'
+
+# SESSION_ENGINE = 'django.contrib.sessions.backends.cache'  
+    
+# SESSION_COOKIE_NAME = 'sessionid'
+# SESSION_COOKIE_PATH = "/"
+# SESSION_COOKIE_DOMAIN = None                            
+# SESSION_COOKIE_SECURE = False                            
+# SESSION_COOKIE_HTTPONLY = True                          
+# SESSION_COOKIE_AGE = 1209600                           
+SESSION_EXPIRE_AT_BROWSER_CLOSE = True                 
+SESSION_SAVE_EVERY_REQUEST = True                      
