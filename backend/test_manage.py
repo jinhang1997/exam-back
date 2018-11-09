@@ -11,6 +11,14 @@ from backend.models import UserList
 import json
 import os
 
-def get_all(request):
-  ret = {'code': 200, 'list': 'test1' }
+def get_avaliable(request):
+  ret = {'code': 200, 'list': 'test list of [%s]' % (request.session['login_name']) }
+  return HttpResponse(json.dumps(ret), content_type="application/json")
+
+def get_history(request):
+  ret = {'code': 200, 'list': 'test history of [%s]' % (request.session['login_name']) }
+  return HttpResponse(json.dumps(ret), content_type="application/json")
+
+def get_tea_testlist(request):
+  ret = {'code': 200, 'list': 'test list of [%s]' % (request.session['login_name']) }
   return HttpResponse(json.dumps(ret), content_type="application/json")

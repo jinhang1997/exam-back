@@ -29,7 +29,10 @@ urlpatterns = [
     url(r'^admin/', admin.site.urls),
     url(r'^login/', login_manage.login),
     url(r'^logout/', login_manage.logout),
-    url(r'^testlist/', test_manage.get_all),
+    url(r'^my-info/', login_manage.myinfo),
+    url(r'^test-list-ava/', test_manage.get_avaliable),
+    url(r'^test-history/', test_manage.get_history),
+    url(r'^test-list-tea/', test_manage.get_tea_testlist),
     url(r'^', views.notfound),
     # url(r'^$', TemplateView.as_view(template_name="index.html")),
 ]

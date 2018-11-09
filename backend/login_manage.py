@@ -8,6 +8,7 @@ from django.shortcuts import render
 from django.conf import settings
 from django.http import HttpResponse, HttpRequest, HttpResponseRedirect
 from backend.models import UserList
+from backend import global_vars
 import json
 import os
 
@@ -16,17 +17,24 @@ def login(request):
   if request.method == 'POST':
     username = request.POST.get('account')
     password = request.POST.get('password')
-    # print(username + "is now trying to log in.\n")
-    
     list = UserList.objects.all()
     for var in list:
-      # print(var.username)
       if username == var.username and password == var.password:
         request.session['login_name'] = username;
         request.session.modified = True
-        #print('logged: ' + username + '##' + request.session['login_name'])
-        status = {'code': 200, 'redirect': 'wait.html', 'username': username }
-        #print(request.session.items())
+        # set pages to jump to by users' types
+        if var.usertype == 'student':
+          request.session['type'] = 'student'
+          status = {'code': 200, 'redirect': 'student.html', 'username': username }
+        elif var.usertype == 'teacher':
+          request.session['type'] = 'teacher'
+          status = {'code': 200, 'redirect': 'teacher.html', 'username': username }
+        elif var.usertype == 'admin':
+          request.session['type'] =  'admin'
+          status = {'code': 200, 'redirect': 'admin.html', 'username': username }
+        else:
+          status = {'code': 403, 'redirect': 'error.html', 'username': username }
+          del request.session['login_name']
         return HttpResponse(json.dumps(status), content_type="application/json")
     # login failed
     status = {'code': 403, 'redirect': 'error.html' }
@@ -35,23 +43,21 @@ def login(request):
   # GET means getting login status
   elif request.method == 'GET':
     try:
-      #print(request.session.items())
-      #print(request.session.get('login_name', None))
-      #uname = request.session.get('login_name', None)
       uname = request.session["login_name"]
-    #print('get login status: ' + usermame)
       status = {'code': 200, 'username': uname }     
     except Exception:
       status = {'code': 403, 'info': 'not logged in' }
     return HttpResponse(json.dumps(status), content_type="application/json")
 
-  # other request method are not allowed
+  # other types of request are not allowed
   else:
-    return HttpResponse("Other methods are invalid")
+    return HttpResponse("This request is invalid.")
 
+def myinfo(request):
+  ret = {'code': 200, 'info': 'your personal info' }
+  return HttpResponse(json.dumps(ret), content_type="application/json")
 
 def logout(request):
-  #print('user to delete: ' + request.session['login_name'])
   try:
     outname = request.session['login_name']
     del request.session['login_name']
