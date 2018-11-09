@@ -138,4 +138,13 @@ STATIC_URL= '/frontend/'
 # SESSION_COOKIE_HTTPONLY = True                          
 # SESSION_COOKIE_AGE = 1209600                           
 SESSION_EXPIRE_AT_BROWSER_CLOSE = True                 
-SESSION_SAVE_EVERY_REQUEST = True                      
+SESSION_SAVE_EVERY_REQUEST = True
+
+CORS_ORIGIN_ALLOW_ALL = True
+#CORS_ORIGIN_ALLOW_ALL = False
+
+#CORS_ORIGIN_WHITELIST = (
+#    'localhost',
+#)
+
+CORS_ALLOW_CREDENTIALS = True

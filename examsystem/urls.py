@@ -17,6 +17,8 @@ from django.conf.urls import url
 from django.contrib import admin
 from django.views.generic import TemplateView
 from backend import views
+from backend import login_manage
+from backend import test_manage
 # import indata_tool_api.urls
 from django.conf import settings
 from django.conf.urls.static import static
@@ -25,8 +27,9 @@ import django
 
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
-    url(r'^login/', views.login),
-    url(r'^$', TemplateView.as_view(template_name="index.html")),
-    url(r'^logout/', views.logout),
+    url(r'^login/', login_manage.login),
+    url(r'^logout/', login_manage.logout),
+    url(r'^testlist/', test_manage.get_all),
     url(r'^', views.notfound),
+    # url(r'^$', TemplateView.as_view(template_name="index.html")),
 ]

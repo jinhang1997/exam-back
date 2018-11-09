@@ -11,6 +11,6 @@ from backend.models import UserList
 import json
 import os
 
-def notfound(request):
-  status = {'code': 404, 'info': 'not found' }
-  return HttpResponse(json.dumps(status), content_type="application/json")
+def get_all(request):
+  ret = {'code': 200, 'list': 'test1' }
+  return HttpResponse(json.dumps(ret), content_type="application/json")
