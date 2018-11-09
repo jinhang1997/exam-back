@@ -57,6 +57,42 @@ def myinfo(request):
   ret = {'code': 200, 'info': 'your personal info' }
   return HttpResponse(json.dumps(ret), content_type="application/json")
 
+class User:
+  def __init__(self, username, password, usertype):
+    self.username = username
+    self.password = password
+    self.usertype = usertype
+  def __repr__(self):
+    return repr((self.username, self.password, self.usertype))
+
+def get_all_user(request):
+  userlist = UserList.objects.all()
+  userarr = []
+  for var in userlist:
+    userarr.append(User(var.username, var.password, var.usertype))
+  print (userarr)
+  jsonarr = json.dumps(userarr, default=lambda o: o.__dict__, sort_keys=True)
+  print (jsonarr)
+  loadarr = json.loads(jsonarr)
+  print (loadarr)
+  retdata = {'code': 200, 'userlist': loadarr }
+  print (retdata)
+  return HttpResponse(json.dumps(retdata), content_type="application/json")
+
+def add_user(request):
+  database = UserList(username = request.POST.get('username'), password = request.POST.get('password'), usertype = request.POST.get('usertype'))
+  database.save()
+  status = {'code': 200, 'info': request.POST.get('username') }
+  return HttpResponse(json.dumps(status), content_type="application/json")
+
+def delete_user(request):
+  user_to_del = request.POST.get('username')
+  print (user_to_del)
+  database = UserList.objects.get(username = user_to_del)
+  database.delete()
+  status = {'code': 200, 'info': user_to_del }
+  return HttpResponse(json.dumps(status), content_type="application/json")
+
 def logout(request):
   try:
     outname = request.session['login_name']
