@@ -32,6 +32,7 @@ urlpatterns = [
     url(r'^my-info/', login_manage.myinfo),
     url(r'^user-list/', login_manage.get_all_user),
     url(r'^user-add/', login_manage.add_user),
+    url(r'^user-add-batch/', login_manage.add_user_batch),
     url(r'^user-delete/', login_manage.delete_user),
     url(r'^test-list-ava/', test_manage.get_avaliable),
     url(r'^test-history/', test_manage.get_history),
