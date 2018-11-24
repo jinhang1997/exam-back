@@ -12,5 +12,16 @@ import json
 import os
 
 def notfound(request):
-  status = {'code': 404, 'info': 'not found' }
+  status = { 'code': 404, 'info': 'not found' }
   return HttpResponse(json.dumps(status), content_type="application/json")
+
+def httpecho(request):
+  if request.method == 'POST':
+    status = { 'code': 200, 'method': 'post', 'echo': request.POST.get('msg') }
+    return HttpResponse(json.dumps(status), content_type="application/json")
+  elif request.method == 'GET':
+    status = { 'code': 200, 'method': 'get', 'echo': request.GET.get('msg') }
+    return HttpResponse(json.dumps(status), content_type="application/json")
+  else:
+    status = { 'code': 403, 'method': request.method, 'echo': '' }
+    return HttpResponse(json.dumps(status), content_type="application/json")
