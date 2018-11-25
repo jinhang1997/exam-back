@@ -29,7 +29,7 @@ class StuExamHelper:
         except:
             print('error from StuExamHelper DelAvaPaper : paper id ' + str(paper_id) + ' does not exist')
 
-    def Exist(self, ava_list, paper_id):
+    def ExistAvaPaper(self, ava_list, paper_id):
         papers = ava_list['ava_list']
         paper_obj = {'paper': paper_id}
         if (paper_obj in papers):
