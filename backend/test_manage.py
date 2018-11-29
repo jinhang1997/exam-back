@@ -11,7 +11,7 @@ from backend.models import UserList, Paper
 import json
 import os
 from backend.PaperHelper import PaperHelper
-from backend import json_helper
+from backend import json_helper as jh
 
 class claPaper:
   def __init__(self, pid, pname, teaname, penabled, stulist, prolist):
@@ -66,16 +66,8 @@ def get_paper_detail(request):
   return HttpResponse(json.dumps(ret), content_type="application/json")
 
 
-# use this to get request body when json-emulation is not enabled
-def post2json(request):
-  concat = request.POST
-  postBody = request.body
-  json_result = json.loads(postBody)
-  return json_result
-
-
 def modify_paper(request):
-  postjson = post2json(request)
+  postjson = jh.post2json(request)
   action = postjson['action']
   ph = PaperHelper()
   ret = {'code': 200, 'paper': '' }
@@ -106,7 +98,7 @@ def modify_paper(request):
     ret = {'code': 200, 'info': 'ok' }
 
   elif action == 'delpro':
-    # TODO: delete problem given in POST packet from paper
+    # delete problem given in POST packet from paper
     paperid = postjson['paperid']
     problem = postjson['problem']
     paperdb = Paper.objects.get(pid = paperid)
