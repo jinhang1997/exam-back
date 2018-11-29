@@ -7,11 +7,11 @@ from django.shortcuts import render
 
 from django.conf import settings
 from django.http import HttpResponse, HttpRequest, HttpResponseRedirect
-from backend.models import UserList
-from backend.models import Paper
+from backend.models import UserList, Paper
 import json
 import os
 from backend.PaperHelper import PaperHelper
+from backend import json_helper
 
 class claPaper:
   def __init__(self, pid, pname, teaname, penabled, stulist, prolist):
@@ -33,6 +33,7 @@ def get_history(request):
   ret = {'code': 200, 'list': 'test history of [%s]' % (request.session['login_name']) }
   return HttpResponse(json.dumps(ret), content_type="application/json")
 
+
 def get_tea_testlist(request):
   tname = request.session['login_name']
   print(tname)
@@ -50,6 +51,7 @@ def get_tea_testlist(request):
   ret = {'code': 200, 'list': loadarr }
   return HttpResponse(json.dumps(ret), content_type="application/json")
 
+
 def get_paper_detail(request):
   paperid = request.GET.get('id')
   # TODO: get paper from database
@@ -59,23 +61,52 @@ def get_paper_detail(request):
    default=lambda o: o.__dict__, sort_keys=True)
   jsonpaper = json.loads(strpaper)
   prolist = json.loads(paper[0].prolist)
-  print(jsonpaper)
+  #print(jsonpaper)
   ret = {'code': 200, 'info': jsonpaper, 'paper': prolist}
   return HttpResponse(json.dumps(ret), content_type="application/json")
 
+
+# use this to get request body when json-emulation is not enabled
+def post2json(request):
+  concat = request.POST
+  postBody = request.body
+  json_result = json.loads(postBody)
+  return json_result
+
+
 def modify_paper(request):
-  action = request.POST.get('action')
+  postjson = post2json(request)
+  action = postjson['action']
+  ph = PaperHelper()
+  ret = {'code': 200, 'paper': '' }
+
   if action == 'create':
     # TODO: create a new paper and return
-    jh = JsonHelper()
-    paper = jh.Create()
+    paper = ph.CreateProList()
     print(paper)
     ret = {'code': 200, 'paper': paper }
   elif action == 'addpro':
     # TODO: add problem given in POST packet to paper
-    ret = {'code': 200, 'paper': 'addpro not implemented' }
+    paperid = postjson['paperid']
+    problem = postjson['problem']
+    #print('%s %s'%(paperid, problem))
+    # fetch original problem list from database
+    paperdb = Paper.objects.get(pid = paperid)
+    #print(paperdb)
+    original_prolist = json.loads(paperdb.prolist)
+    #print(original_prolist)
+    print(problem)
+    ph.AddPro(original_prolist, problem["problem"], problem["ptype"], problem["point"],
+     problem["right"], problem["wrong1"], problem["wrong2"], problem["wrong3"])
+    #print(original_prolist)
+    paperdb.prolist = json.dumps(original_prolist)
+    print(paperdb.prolist)
+    paperdb.save()
+
+    ret = {'code': 200, 'info': 'ok' }
   elif action == 'delpro':
     # TODO: delete problem given in POST packet from paper
+
     ret = {'code': 200, 'paper': 'delpro not implemented' }
   return HttpResponse(json.dumps(ret), content_type="application/json")
 

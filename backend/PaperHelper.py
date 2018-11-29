@@ -19,12 +19,12 @@ class PaperHelper:
 
         # : 'dict'
 
-    def AddPro(self, list_to_append, problem, type, point, right, wrong1, wrong2, wrong3):
+    def AddPro(self, list_to_append, problem, ptype, point, right, wrong1, wrong2, wrong3):
         list_to_append['problem_count'] += 1
         obj = {
             'id': list_to_append['id_seed'],
             'problem': problem,
-            'type': type,
+            'type': ptype,
             'point': point,
             'right': right,
             'wrong1': wrong1,
