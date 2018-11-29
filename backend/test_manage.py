@@ -85,8 +85,9 @@ def modify_paper(request):
     paper = ph.CreateProList()
     print(paper)
     ret = {'code': 200, 'paper': paper }
+
   elif action == 'addpro':
-    # TODO: add problem given in POST packet to paper
+    # add problem given in POST packet to paper
     paperid = postjson['paperid']
     problem = postjson['problem']
     #print('%s %s'%(paperid, problem))
@@ -102,11 +103,19 @@ def modify_paper(request):
     paperdb.prolist = json.dumps(original_prolist)
     print(paperdb.prolist)
     paperdb.save()
-
     ret = {'code': 200, 'info': 'ok' }
+
   elif action == 'delpro':
     # TODO: delete problem given in POST packet from paper
+    paperid = postjson['paperid']
+    problem = postjson['problem']
+    paperdb = Paper.objects.get(pid = paperid)
+    original_prolist = json.loads(paperdb.prolist)
+    ph.DelPro(original_prolist, problem)
+    paperdb.prolist = json.dumps(original_prolist)
+    print(paperdb.prolist)
+    paperdb.save()
+    ret = {'code': 200, 'paper': 'ok' }
 
-    ret = {'code': 200, 'paper': 'delpro not implemented' }
   return HttpResponse(json.dumps(ret), content_type="application/json")
 

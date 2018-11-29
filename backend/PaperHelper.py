@@ -46,7 +46,7 @@ class PaperHelper:
         if(checked):
             list_to_del['problem_count'] -= 1
         else:
-            print('error from PaperHelper DelPro : problem id ' + str(stu_id) + ' does not exist')
+            print('error from PaperHelper DelPro : problem id ' + str(id) + ' does not exist')
 
     def CreateStuList(self):
         obj = {
