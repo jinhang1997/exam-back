@@ -122,24 +122,30 @@ def modify_allow_stulist(request):
     stulist = postjson['stulist']
     stuarray = stulist.split('\n')
     original_stulist = json.loads(paperdb.stulist)
-    print(original_stulist)
     count = 0
     for var in stuarray:
       # TODO(LOW): verify var(stuid) whether existing
       #
-      print(var + "#")
       ph.AddStu(original_stulist, var)
       count += 1
-      #print(original_stulist)
     paperdb.stulist = json.dumps(original_stulist)
-    print(paperdb.stulist)
     paperdb.save()
     ret = {'code': 200, 'info': 'ok', 'count': count }
 
   elif (action == 'delstu'):
-    ret = {'code': 200, 'info': 'ok' }
+    stu_to_del = postjson['stu_to_del']
+    original_stulist = json.loads(paperdb.stulist)
+    ph.DelStu(original_stulist, stu_to_del)
+    paperdb.stulist = json.dumps(original_stulist)
+    paperdb.save()
+    ret = {'code': 200, 'info': 'ok', 'deleted': stu_to_del }
 
   elif (action == 'cleanstu'):
-    ret = {'code': 200, 'info': 'ok' }
+    original_stulist = json.loads(paperdb.stulist)
+    count = original_stulist['count']
+    empty_list = ph.CreateStuList()
+    paperdb.stulist = json.dumps(empty_list)
+    paperdb.save()
+    ret = {'code': 200, 'info': 'ok', 'count': count }
 
   return HttpResponse(json.dumps(ret), content_type="application/json")
