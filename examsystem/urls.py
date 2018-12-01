@@ -39,6 +39,7 @@ urlpatterns = [
     url(r'^paper-get-list-tea/', test_manage.get_tea_testlist),
     url(r'^paper-get-detail/', test_manage.get_paper_detail),
     url(r'^paper-modify/', test_manage.modify_paper),
+    url(r'^paper-stulist/', test_manage.modify_allow_stulist),
     url(r'^echo/', views.httpecho),
     url(r'^', views.notfound),
     # url(r'^$', TemplateView.as_view(template_name="index.html")),

@@ -54,46 +54,43 @@ def get_tea_testlist(request):
 
 def get_paper_detail(request):
   paperid = request.GET.get('id')
-  # TODO: get paper from database
+  # get paper from database
+  # TODO(LOW): verify if the specified paper is existing
+  ###
   paper = Paper.objects.filter(pid = paperid)
   strpaper = json.dumps(claPaper(paper[0].pid, paper[0].pname, paper[0].teaname,
-   paper[0].penabled, paper[0].stulist, 'prolist'),
+   paper[0].penabled, 'stulist', 'prolist'),
    default=lambda o: o.__dict__, sort_keys=True)
   jsonpaper = json.loads(strpaper)
   prolist = json.loads(paper[0].prolist)
-  #print(jsonpaper)
-  ret = {'code': 200, 'info': jsonpaper, 'paper': prolist}
+  stulist = json.loads(paper[0].stulist)
+  ret = {'code': 200, 'info': jsonpaper, 'paper': prolist, 'stulist': stulist }
   return HttpResponse(json.dumps(ret), content_type="application/json")
 
 
 def modify_paper(request):
   postjson = jh.post2json(request)
   action = postjson['action']
+  ret = {'code': 404, 'info': 'unknown action' + action }
   ph = PaperHelper()
-  ret = {'code': 200, 'paper': '' }
 
   if action == 'create':
     # TODO: create a new paper and return
     paper = ph.CreateProList()
     print(paper)
+    ###
     ret = {'code': 200, 'paper': paper }
 
   elif action == 'addpro':
     # add problem given in POST packet to paper
     paperid = postjson['paperid']
     problem = postjson['problem']
-    #print('%s %s'%(paperid, problem))
     # fetch original problem list from database
     paperdb = Paper.objects.get(pid = paperid)
-    #print(paperdb)
     original_prolist = json.loads(paperdb.prolist)
-    #print(original_prolist)
-    print(problem)
     ph.AddPro(original_prolist, problem["problem"], problem["ptype"], problem["point"],
      problem["right"], problem["wrong1"], problem["wrong2"], problem["wrong3"])
-    #print(original_prolist)
     paperdb.prolist = json.dumps(original_prolist)
-    print(paperdb.prolist)
     paperdb.save()
     ret = {'code': 200, 'info': 'ok' }
 
@@ -105,9 +102,44 @@ def modify_paper(request):
     original_prolist = json.loads(paperdb.prolist)
     ph.DelPro(original_prolist, problem)
     paperdb.prolist = json.dumps(original_prolist)
-    print(paperdb.prolist)
     paperdb.save()
     ret = {'code': 200, 'paper': 'ok' }
 
   return HttpResponse(json.dumps(ret), content_type="application/json")
 
+
+def modify_allow_stulist(request):
+  postjson = jh.post2json(request)
+  paperid = postjson['paperid']
+  action = postjson['action']
+  ph = PaperHelper()
+  ret = {'code': 404, 'info': 'unknown action' + action }
+  # TODO(LOW): verify paperid whether existing
+  ###
+  paperdb = Paper.objects.get(pid = paperid)
+
+  if (action == 'addstu'):
+    stulist = postjson['stulist']
+    stuarray = stulist.split('\n')
+    original_stulist = json.loads(paperdb.stulist)
+    print(original_stulist)
+    count = 0
+    for var in stuarray:
+      # TODO(LOW): verify var(stuid) whether existing
+      #
+      print(var + "#")
+      ph.AddStu(original_stulist, var)
+      count += 1
+      #print(original_stulist)
+    paperdb.stulist = json.dumps(original_stulist)
+    print(paperdb.stulist)
+    paperdb.save()
+    ret = {'code': 200, 'info': 'ok', 'count': count }
+
+  elif (action == 'delstu'):
+    ret = {'code': 200, 'info': 'ok' }
+
+  elif (action == 'cleanstu'):
+    ret = {'code': 200, 'info': 'ok' }
+
+  return HttpResponse(json.dumps(ret), content_type="application/json")
