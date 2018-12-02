@@ -10,6 +10,7 @@ from django.http import HttpResponse, HttpRequest, HttpResponseRedirect
 from backend.models import UserList, Paper
 import json
 import os
+import time
 from backend.PaperHelper import PaperHelper
 from backend import json_helper as jh
 
@@ -21,13 +22,16 @@ class claPaper:
     self.penabled = penabled
     self.stulist = stulist
     self.prolist = prolist
+
   def __repr__(self):
     return repr((self.pid, self.pname, self.teaname,
     self.penabled, self.stulist, self.prolist))
 
+
 def get_avaliable(request):
   ret = {'code': 200, 'list': 'test list of [%s]' % (request.session['login_name']) }
   return HttpResponse(json.dumps(ret), content_type="application/json")
+
 
 def get_history(request):
   ret = {'code': 200, 'list': 'test history of [%s]' % (request.session['login_name']) }
@@ -36,18 +40,13 @@ def get_history(request):
 
 def get_tea_testlist(request):
   tname = request.session['login_name']
-  print(tname)
   papers = Paper.objects.all()#.filter(teaname = tname)
-  print(papers)
   plist = []
   for var in papers:
     plist.append(claPaper(var.pid, var.pname, var.teaname,
-      var.penabled, var.stulist, var.prolist))
-  print(plist)
+      var.penabled, 'not used', 'not used'))
   jsonarr = json.dumps(plist, default=lambda o: o.__dict__, sort_keys=True)
-  print(jsonarr)
   loadarr = json.loads(jsonarr)
-  print(loadarr)
   ret = {'code': 200, 'list': loadarr }
   return HttpResponse(json.dumps(ret), content_type="application/json")
 
@@ -65,6 +64,35 @@ def get_paper_detail(request):
   prolist = json.loads(paper[0].prolist)
   stulist = json.loads(paper[0].stulist)
   ret = {'code': 200, 'info': jsonpaper, 'paper': prolist, 'stulist': stulist }
+  return HttpResponse(json.dumps(ret), content_type="application/json")
+
+
+def manage_paper(request):
+  postjson = jh.post2json(request)
+  action = postjson['action']
+  ret = {'code': 404, 'info': 'unknown action' + action }
+  ph = PaperHelper()
+
+  if action == 'create':
+    # TODO(LOW): verify if the specified paper name is used
+    ###
+    # get paper name and initialize the new paper with a time id
+    database = Paper(pid = time.strftime('%Y%m%d%H%M%S', time.localtime(time.time())),
+      pname = postjson['papername'],
+      teaname = request.session['login_name'],
+      penabled = 'no',
+      stulist = json.dumps(ph.CreateStuList()),
+      prolist = json.dumps(ph.CreateProList()))
+    database.save()
+    ret = {'code': 200, 'info': 'ok', 'papername': postjson['papername'] }
+    return HttpResponse(json.dumps(ret), content_type="application/json")
+
+  elif action == 'delete':
+    # TODO: get the paper id and delete it from database
+    ###
+    ret = {'code': 200, 'info': 'ok' }
+    return HttpResponse(json.dumps(ret), content_type="application/json")
+
   return HttpResponse(json.dumps(ret), content_type="application/json")
 
 

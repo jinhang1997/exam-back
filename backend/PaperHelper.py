@@ -17,8 +17,6 @@ class PaperHelper:
         }
         return obj
 
-        # : 'dict'
-
     def AddPro(self, list_to_append, problem, ptype, point, right, wrong1, wrong2, wrong3):
         list_to_append['problem_count'] += 1
         obj = {
@@ -34,7 +32,6 @@ class PaperHelper:
         list_to_append['question_list'].append(obj)
         list_to_append['id_seed'] += 1
 
-    #  : 'dict'
     def DelPro(self, list_to_del, id):
         questions = list_to_del['question_list']
         checked = False

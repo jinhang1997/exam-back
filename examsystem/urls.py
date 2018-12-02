@@ -37,6 +37,7 @@ urlpatterns = [
     #url(r'^test-list-ava/', test_manage.get_avaliable),
     #url(r'^test-history/', test_manage.get_history),
     url(r'^paper-get-list-tea/', test_manage.get_tea_testlist),
+    url(r'^paper-manage/', test_manage.manage_paper),
     url(r'^paper-get-detail/', test_manage.get_paper_detail),
     url(r'^paper-modify/', test_manage.modify_paper),
     url(r'^paper-stulist/', test_manage.modify_allow_stulist),
