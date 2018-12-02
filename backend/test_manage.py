@@ -28,7 +28,7 @@ class claPaper:
     self.penabled, self.stulist, self.prolist))
 
 
-def get_avaliable(request):
+def get_stu_testlist(request):
   ret = {'code': 200, 'list': 'test list of [%s]' % (request.session['login_name']) }
   return HttpResponse(json.dumps(ret), content_type="application/json")
 
@@ -72,7 +72,7 @@ def get_paper_detail(request):
 def manage_paper(request):
   postjson = jh.post2json(request)
   action = postjson['action']
-  ret = {'code': 404, 'info': 'unknown action' + action }
+  ret = {'code': 404, 'info': 'unknown action ' + action }
   ph = PaperHelper()
 
   if action == 'create':
@@ -87,32 +87,23 @@ def manage_paper(request):
       prolist = json.dumps(ph.CreateProList()))
     database.save()
     ret = {'code': 200, 'info': 'ok', 'papername': postjson['papername'] }
-    return HttpResponse(json.dumps(ret), content_type="application/json")
 
   elif action == 'delete':
     # TODO: get the paper id and delete it from database
     ###
     Paper.objects.filter(pid = postjson['paperid']).delete()
     ret = {'code': 200, 'info': 'ok', 'paperid': postjson['paperid'] }
-    return HttpResponse(json.dumps(ret), content_type="application/json")
 
   return HttpResponse(json.dumps(ret), content_type="application/json")
 
 
-def modify_paper(request):
+def modify_paper_prolist(request):
   postjson = jh.post2json(request)
   action = postjson['action']
-  ret = {'code': 404, 'info': 'unknown action' + action }
+  ret = {'code': 404, 'info': 'unknown action ' + action }
   ph = PaperHelper()
 
-  if action == 'create':
-    # TODO: create a new paper and return
-    paper = ph.CreateProList()
-    print(paper)
-    ###
-    ret = {'code': 200, 'paper': paper }
-
-  elif action == 'addpro':
+  if action == 'addpro':
     # add problem given in POST packet to paper
     paperid = postjson['paperid']
     problem = postjson['problem']
@@ -139,7 +130,7 @@ def modify_paper(request):
   return HttpResponse(json.dumps(ret), content_type="application/json")
 
 
-def modify_allow_stulist(request):
+def modify_paper_stulist(request):
   postjson = jh.post2json(request)
   paperid = postjson['paperid']
   action = postjson['action']
