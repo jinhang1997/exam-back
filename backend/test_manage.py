@@ -40,11 +40,13 @@ def get_history(request):
 
 def get_tea_testlist(request):
   tname = request.session['login_name']
-  papers = Paper.objects.all()#.filter(teaname = tname)
+  papers = Paper.objects.filter(teaname = tname)#.all()#
   plist = []
   for var in papers:
+    stucount = json.loads(var.stulist)['count']
+    procount = json.loads(var.prolist)['problem_count']
     plist.append(claPaper(var.pid, var.pname, var.teaname,
-      var.penabled, 'not used', 'not used'))
+      var.penabled, str(stucount), str(procount)))
   jsonarr = json.dumps(plist, default=lambda o: o.__dict__, sort_keys=True)
   loadarr = json.loads(jsonarr)
   ret = {'code': 200, 'list': loadarr }
@@ -58,8 +60,8 @@ def get_paper_detail(request):
   ###
   paper = Paper.objects.filter(pid = paperid)
   strpaper = json.dumps(claPaper(paper[0].pid, paper[0].pname, paper[0].teaname,
-   paper[0].penabled, 'stulist', 'prolist'),
-   default=lambda o: o.__dict__, sort_keys=True)
+    paper[0].penabled, 'stulist', 'prolist'),
+    default=lambda o: o.__dict__, sort_keys=True)
   jsonpaper = json.loads(strpaper)
   prolist = json.loads(paper[0].prolist)
   stulist = json.loads(paper[0].stulist)
@@ -90,7 +92,8 @@ def manage_paper(request):
   elif action == 'delete':
     # TODO: get the paper id and delete it from database
     ###
-    ret = {'code': 200, 'info': 'ok' }
+    Paper.objects.filter(pid = postjson['paperid']).delete()
+    ret = {'code': 200, 'info': 'ok', 'paperid': postjson['paperid'] }
     return HttpResponse(json.dumps(ret), content_type="application/json")
 
   return HttpResponse(json.dumps(ret), content_type="application/json")
