@@ -111,14 +111,14 @@ def manage_paper(request):
     ret = {'code': 200, 'info': 'ok', 'paperid': postjson['paperid'] }
 
   elif action == 'enable':
-    # TODO: turn the status of paper to yes
+    # turn the status of paper to yes
     paperdb = Paper.objects.get(pid = postjson['paperid'])
     paperdb.penabled = 'yes'
     paperdb.save()
     ###
     ret = {'code': 200, 'info': 'ok', 'paperid': postjson['paperid'] }
   elif action == 'disable':
-    # TODO: turn the status of paper to no
+    # turn the status of paper to no
     paperdb = Paper.objects.get(pid = postjson['paperid'])
     paperdb.penabled = 'no'
     paperdb.save()
@@ -200,5 +200,25 @@ def modify_paper_stulist(request):
     paperdb.stulist = json.dumps(empty_list)
     paperdb.save()
     ret = {'code': 200, 'info': 'ok', 'count': count }
+
+  return HttpResponse(json.dumps(ret), content_type="application/json")
+
+
+def get_test_detail(request):
+  # GET method means getting test problems
+  if request.method == 'GET':
+    # TODO: send the test generated back to student
+    ###
+    test = {
+      'test_problem': [
+        { 'id': '1','problem': '1+1=?','type': 'keguan','point': '5','option1': '5','option2': '2','option3': '4','option4': '3','answer': '',},
+        { 'id': '2','problem': '你好吗？','type': 'zhuguan','point': '10','option1': '','option2': '','option3': '','option4': '','answer': '',}
+      ] 
+    }
+    ret = {'code': 200, 'info': 'ok', 'test': test }
+
+  # POST method means submitting answers
+  elif request.method == 'POST':
+    ret = {'code': 200, 'info': 'ok', 'stu': request.session['login_name']}
 
   return HttpResponse(json.dumps(ret), content_type="application/json")

@@ -39,6 +39,8 @@ urlpatterns = [
     url(r'^paper-prolist/', test_manage.modify_paper_prolist),
     url(r'^paper-stulist/', test_manage.modify_paper_stulist),
 
+    url(r'^test-manage/', test_manage.get_test_detail),
+
     url(r'^my-info/', login_manage.myinfo),
     url(r'^user-list/', login_manage.get_all_user),
     url(r'^user-add/', login_manage.add_user),
