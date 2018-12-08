@@ -17,14 +17,12 @@ class PaperHelper:
         }
         return obj
 
-        # : 'dict'
-
-    def AddPro(self, list_to_append, problem, type, point, right, wrong1, wrong2, wrong3):
+    def AddPro(self, list_to_append, problem, ptype, point, right, wrong1, wrong2, wrong3):
         list_to_append['problem_count'] += 1
         obj = {
             'id': list_to_append['id_seed'],
             'problem': problem,
-            'type': type,
+            'type': ptype,
             'point': point,
             'right': right,
             'wrong1': wrong1,
@@ -34,7 +32,6 @@ class PaperHelper:
         list_to_append['question_list'].append(obj)
         list_to_append['id_seed'] += 1
 
-    #  : 'dict'
     def DelPro(self, list_to_del, id):
         questions = list_to_del['question_list']
         checked = False
@@ -46,7 +43,7 @@ class PaperHelper:
         if(checked):
             list_to_del['problem_count'] -= 1
         else:
-            print('error from PaperHelper DelPro : problem id ' + str(stu_id) + ' does not exist')
+            print('error from PaperHelper DelPro : problem id ' + str(id) + ' does not exist')
 
     def CreateStuList(self):
         obj = {

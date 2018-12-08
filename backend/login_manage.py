@@ -92,7 +92,8 @@ def add_user(request):
   if if_user_exist(uname) == True:
     status = {'code': 403, 'info': uname + ' is already existing' }
     return HttpResponse(json.dumps(status), content_type="application/json")
-  database = UserList(username = uname, password = request.POST.get('password'), usertype = request.POST.get('usertype'))
+  database = UserList(username = uname, password = request.POST.get('password'),
+    usertype = request.POST.get('usertype'))
   database.save()
   status = {'code': 200, 'info': uname }
   return HttpResponse(json.dumps(status), content_type="application/json")
