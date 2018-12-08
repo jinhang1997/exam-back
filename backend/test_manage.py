@@ -105,9 +105,24 @@ def manage_paper(request):
     ret = {'code': 200, 'info': 'ok', 'papername': postjson['papername'] }
 
   elif action == 'delete':
-    # TODO: get the paper id and delete it from database
-    ###
+    # get the paper id and delete it from database
     Paper.objects.filter(pid = postjson['paperid']).delete()
+    ###
+    ret = {'code': 200, 'info': 'ok', 'paperid': postjson['paperid'] }
+
+  elif action == 'enable':
+    # TODO: turn the status of paper to yes
+    paperdb = Paper.objects.get(pid = postjson['paperid'])
+    paperdb.penabled = 'yes'
+    paperdb.save()
+    ###
+    ret = {'code': 200, 'info': 'ok', 'paperid': postjson['paperid'] }
+  elif action == 'disable':
+    # TODO: turn the status of paper to no
+    paperdb = Paper.objects.get(pid = postjson['paperid'])
+    paperdb.penabled = 'no'
+    paperdb.save()
+    ###
     ret = {'code': 200, 'info': 'ok', 'paperid': postjson['paperid'] }
 
   return HttpResponse(json.dumps(ret), content_type="application/json")
