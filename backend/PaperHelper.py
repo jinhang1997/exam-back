@@ -1,4 +1,5 @@
 import json
+import random
 
 
 class PaperHelper:
@@ -40,7 +41,7 @@ class PaperHelper:
                 questions.pop(i)
                 checked = True
                 break
-        if(checked):
+        if (checked):
             list_to_del['problem_count'] -= 1
         else:
             print('error from PaperHelper DelPro : problem id ' + str(id) + ' does not exist')
@@ -74,6 +75,36 @@ class PaperHelper:
             return True
         else:
             return False
+
+    def Paper2test(self, prolist):
+        questions = prolist['question_list']
+        test_questions = []
+        for question in questions:
+            test_question = {}
+            if (question['type'] == 'keguan'):
+                options = []
+                i = 0
+                for key, value in question.items():
+                    if (i > 3):
+                        options.append(value)
+                    else:
+                        test_question[key] = value
+                    i += 1
+                random.shuffle(options)
+                for i in range(0, 4):
+                    test_question['option' + str(i + 1)] = options[i]
+                test_question['answer'] = ''
+            elif (question['type'] == 'zhuguan'):
+                i = 0
+                for key, value in question.items():
+                    if (i > 3):
+                        test_question['option' + str(i - 3)] = ''
+                    else:
+                        test_question[key] = value
+                    i += 1
+                test_question['answer'] = ''
+            test_questions.append(test_question)
+        return {'test_problem': test_questions}
 
 
 if __name__ == '__main__':
