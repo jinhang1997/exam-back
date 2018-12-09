@@ -7,6 +7,7 @@ from django.shortcuts import render
 
 from django.conf import settings
 from django.http import HttpResponse, HttpRequest, HttpResponseRedirect
+from django.db.models import Q
 from backend.models import UserList, Paper, TestRecord
 import json
 import os
@@ -238,17 +239,21 @@ def get_test_detail(request):
     answers = ph.ExtractAnswers(postjson['test'])
     print(answers)
     stuname = request.session['login_name']
-    db = TestRecord(paperid = postjson['paperid'], 
-      stuid = stuname,
-      submit_time = time.strftime('%Y%m%d%H%M%S', time.localtime(time.time())),
-      answers = answers,
-      keguan_grade = -1,
-      keguan_detail = '',
-      zhuguan_grade = -1,
-      zhuguan_detail = '',
-      total_score = -1
-      )
-    db.save()
-    ret = {'code': 200, 'info': 'ok', 'stu': stuname, 'pname': postjson['pname']}
+    paperid = postjson['paperid']
+    if TestRecord.objects.filter(Q(stuid = stuname) & Q(paperid = paperid)).count() > 0:
+      ret = {'code': 403, 'info': 'already exists', 'stu': stuname, 'pname': postjson['pname']}
+    else:
+      db = TestRecord(paperid = paperid, 
+        stuid = stuname,
+        submit_time = time.strftime('%Y%m%d%H%M%S', time.localtime(time.time())),
+        answers = answers,
+        keguan_grade = -1,
+        keguan_detail = '',
+        zhuguan_grade = -1,
+        zhuguan_detail = '',
+        total_score = -1
+        )
+      db.save()
+      ret = {'code': 200, 'info': 'ok', 'stu': stuname, 'pname': postjson['pname']}
 
   return HttpResponse(json.dumps(ret), content_type="application/json")
