@@ -83,26 +83,33 @@ class PaperHelper:
             test_question = {}
             if (question['type'] == 'keguan'):
                 options = []
-                i = 0
-                for key, value in question.items():
-                    if (i > 3):
-                        options.append(value)
-                    else:
-                        test_question[key] = value
-                    i += 1
+                options.append(question['right'])
+                for i in range(1, 4):
+                    options.append(question['wrong' + str(i)])
                 random.shuffle(options)
-                for i in range(0, 4):
-                    test_question['option' + str(i + 1)] = options[i]
-                test_question['answer'] = ''
+                test_question = {
+                    'id': question['id'],
+                    'problem': question['problem'],
+                    'type': question['type'],
+                    'point': question['point'],
+                    'option1': options[0],
+                    'option2': options[1],
+                    'option3': options[2],
+                    'option4': options[3],
+                    'answer': '',
+                }
             elif (question['type'] == 'zhuguan'):
-                i = 0
-                for key, value in question.items():
-                    if (i > 3):
-                        test_question['option' + str(i - 3)] = ''
-                    else:
-                        test_question[key] = value
-                    i += 1
-                test_question['answer'] = ''
+                test_question = {
+                    'id': question['id'],
+                    'problem': question['problem'],
+                    'type': question['type'],
+                    'point': question['point'],
+                    'option1': '',
+                    'option2': '',
+                    'option3': '',
+                    'option4': '',
+                    'answer': '',
+                }
             test_questions.append(test_question)
         return {'test_problem': test_questions}
 
