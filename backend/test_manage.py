@@ -205,20 +205,37 @@ def modify_paper_stulist(request):
 
 
 def get_test_detail(request):
+  ph = PaperHelper()
+  ret = {'code': 404, 'info': 'unknown method ' + request.method }
   # GET method means getting test problems
   if request.method == 'GET':
     # TODO: send the test generated back to student
+    paperid = request.GET.get('paperid')
+    db = Paper.objects.get(pid = paperid)
+    paper_pro = json.loads(db.prolist)
+    '''
+    print(db.prolist)
+    test = ph.Paper2test(paper_pro)
+    '''
     ###
+    
     test = {
       'test_problem': [
         { 'id': '1','problem': '1+1=?','type': 'keguan','point': '5','option1': '5','option2': '2','option3': '4','option4': '3','answer': '',},
         { 'id': '2','problem': '你好吗？','type': 'zhuguan','point': '10','option1': '','option2': '','option3': '','option4': '','answer': '',}
       ] 
     }
-    ret = {'code': 200, 'info': 'ok', 'test': test }
+    test_info = json.dumps(claPaper(db.pid, db.pname, db.teaname, db.penabled,
+      'stulist', 'prolist'), default=lambda o: o.__dict__, sort_keys=True)
+    test_info = json.loads(test_info)
+    #print(test)
+    ret = {'code': 200, 'info': 'ok', 'test': test, 'test_info': test_info }
 
   # POST method means submitting answers
   elif request.method == 'POST':
-    ret = {'code': 200, 'info': 'ok', 'stu': request.session['login_name']}
+    postjson = jh.post2json(request)
+    # WAIT: given postjson and get the new json with only answer, id, type, point
+    print(postjson['test']['test_problem'])
+    ret = {'code': 200, 'info': 'ok', 'stu': request.session['login_name'], 'pname': postjson['pname']}
 
   return HttpResponse(json.dumps(ret), content_type="application/json")
