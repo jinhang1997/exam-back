@@ -213,18 +213,16 @@ def get_test_detail(request):
     paperid = request.GET.get('paperid')
     db = Paper.objects.get(pid = paperid)
     paper_pro = json.loads(db.prolist)
+    test = ph.Paper2Test(paper_pro)
     '''
-    print(db.prolist)
-    test = ph.Paper2test(paper_pro)
-    '''
-    ###
-    
     test = {
       'test_problem': [
         { 'id': '1','problem': '1+1=?','type': 'keguan','point': '5','option1': '5','option2': '2','option3': '4','option4': '3','answer': '',},
         { 'id': '2','problem': '你好吗？','type': 'zhuguan','point': '10','option1': '','option2': '','option3': '','option4': '','answer': '',}
       ] 
     }
+    '''
+    ###
     test_info = json.dumps(claPaper(db.pid, db.pname, db.teaname, db.penabled,
       'stulist', 'prolist'), default=lambda o: o.__dict__, sort_keys=True)
     test_info = json.loads(test_info)
@@ -235,7 +233,9 @@ def get_test_detail(request):
   elif request.method == 'POST':
     postjson = jh.post2json(request)
     # WAIT: given postjson and get the new json with only answer, id, type, point
-    print(postjson['test']['test_problem'])
+    #print(postjson['test']['test_problem'])
+    answers = ph.ExtractAnswers(postjson['test'])
+    print(answers)
     ret = {'code': 200, 'info': 'ok', 'stu': request.session['login_name'], 'pname': postjson['pname']}
 
   return HttpResponse(json.dumps(ret), content_type="application/json")
