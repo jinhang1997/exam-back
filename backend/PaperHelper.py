@@ -76,7 +76,7 @@ class PaperHelper:
         else:
             return False
 
-    def Paper2test(self, prolist):
+    def Paper2Test(self, prolist):
         questions = prolist['question_list']
         test_questions = []
         for question in questions:
@@ -113,6 +113,53 @@ class PaperHelper:
             test_questions.append(test_question)
         return {'test_problem': test_questions}
 
+    def ExtractAnswers(self, test_problem):
+        answer_list = []
+        problems = test_problem['test_problem']
+        for problem in problems:
+            answer = {
+                'id': problem['id'],
+                'point': problem['point'],
+                'type': problem['type'],
+                'answer': problem['answer']
+            }
+            answer_list.append(answer)
+        return {'answer_list': answer_list}
 
-if __name__ == '__main__':
-    pass
+    def GetProb(self, problems, id):
+        the_problem = {}
+        for problem in problems:
+            if (problem['id'] == id):
+                the_problem = problem.copy()
+                break
+        return the_problem
+
+    def JudgeKeguan(self, answer_list, problem_list):
+        answers = answer_list['answer_list']
+        problems = problem_list['question_list']
+        results = []
+        score = 0
+        for answer in answers:
+            if (answer['type'] == 'keguan'):
+                # 两个list经过前端和网络以后顺序可能不一样，所以要根据id再匹配一遍
+                problem = self.GetProb(problems, answer['id'])
+                if (answer['answer'] == problem['right']):
+                    score += problem['point']
+                    result = {
+                        'id': problem['id'],
+                        'grade': problem['point']
+                    }
+                else:
+                    result = {
+                        'id': problem['id'],
+                        'grade': 0
+                    }
+                results.append(result)
+        result_sum = {
+            'keguan_score': score,
+            'keguan_detail': results
+        }
+        return result_sum
+
+    if __name__ == '__main__':
+        pass
