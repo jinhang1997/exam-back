@@ -7,7 +7,7 @@ from django.shortcuts import render
 
 from django.conf import settings
 from django.http import HttpResponse, HttpRequest, HttpResponseRedirect
-from backend.models import UserList, Paper
+from backend.models import UserList, Paper, TestRecord
 import json
 import os
 import time
@@ -232,10 +232,23 @@ def get_test_detail(request):
   # POST method means submitting answers
   elif request.method == 'POST':
     postjson = jh.post2json(request)
+    print(postjson)
     # WAIT: given postjson and get the new json with only answer, id, type, point
     #print(postjson['test']['test_problem'])
     answers = ph.ExtractAnswers(postjson['test'])
     print(answers)
-    ret = {'code': 200, 'info': 'ok', 'stu': request.session['login_name'], 'pname': postjson['pname']}
+    stuname = request.session['login_name']
+    db = TestRecord(paperid = postjson['paperid'], 
+      stuid = stuname,
+      submit_time = time.strftime('%Y%m%d%H%M%S', time.localtime(time.time())),
+      answers = answers,
+      keguan_grade = -1,
+      keguan_detail = '',
+      zhuguan_grade = -1,
+      zhuguan_detail = '',
+      total_score = -1
+      )
+    db.save()
+    ret = {'code': 200, 'info': 'ok', 'stu': stuname, 'pname': postjson['pname']}
 
   return HttpResponse(json.dumps(ret), content_type="application/json")
