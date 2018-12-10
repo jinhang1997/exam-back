@@ -7,7 +7,8 @@ from django.shortcuts import render
 
 from django.conf import settings
 from django.http import HttpResponse, HttpRequest, HttpResponseRedirect
-from backend.models import UserList, Paper
+from django.db.models import Q
+from backend.models import UserList, Paper, TestRecord
 import json
 import os
 import time
@@ -15,17 +16,18 @@ from backend.PaperHelper import PaperHelper
 from backend import json_helper as jh
 
 class claPaper:
-  def __init__(self, pid, pname, teaname, penabled, stulist, prolist):
+  def __init__(self, pid, pname, teaname, penabled, stulist, prolist, submitted):
     self.pid = pid
     self.pname = pname
     self.teaname = teaname
     self.penabled = penabled
     self.stulist = stulist
     self.prolist = prolist
+    self.submitted = submitted
 
   def __repr__(self):
-    return repr((self.pid, self.pname, self.teaname,
-    self.penabled, self.stulist, self.prolist))
+    return repr((self.pid, self.pname, self.teaname, self.penabled,
+      self.stulist, self.prolist, self.submitted))
 
 
 def get_stu_testlist(request):
@@ -40,8 +42,7 @@ def get_stu_testlist(request):
       print("[%s] is in paper [%s]." % (request.session['login_name'], paper.pid))
       stucount = json.loads(paper.stulist)['count']
       procount = json.loads(paper.prolist)['problem_count']
-      retlist.append(claPaper(paper.pid, paper.pname, paper.teaname,
-        paper.penabled, str(stucount), str(procount)))
+      retlist.append(claPaper(paper.pid, paper.pname, paper.teaname, paper.penabled, str(stucount), str(procount), 'unseen'))
   jsonarr = json.dumps(retlist, default=lambda o: o.__dict__, sort_keys=True)
   loadarr = json.loads(jsonarr)
   ret = {'code': 200, 'list': loadarr }
@@ -61,8 +62,11 @@ def get_tea_testlist(request):
   for var in papers:
     stucount = json.loads(var.stulist)['count']
     procount = json.loads(var.prolist)['problem_count']
+    # count the number of whom submitted the answersheet
+    subcount = TestRecord.objects.filter(paperid = var.pid).count()
+    ###
     plist.append(claPaper(var.pid, var.pname, var.teaname,
-      var.penabled, str(stucount), str(procount)))
+      var.penabled, str(stucount), str(procount), str(subcount)))
   jsonarr = json.dumps(plist, default=lambda o: o.__dict__, sort_keys=True)
   loadarr = json.loads(jsonarr)
   ret = {'code': 200, 'list': loadarr }
@@ -75,12 +79,13 @@ def get_paper_detail(request):
   # TODO(LOW): verify if the specified paper is existing
   ###
   paper = Paper.objects.filter(pid = paperid)
-  strpaper = json.dumps(claPaper(paper[0].pid, paper[0].pname, paper[0].teaname,
-    paper[0].penabled, 'stulist', 'prolist'),
-    default=lambda o: o.__dict__, sort_keys=True)
-  jsonpaper = json.loads(strpaper)
   prolist = json.loads(paper[0].prolist)
   stulist = json.loads(paper[0].stulist)
+  subcount = TestRecord.objects.filter(paperid = paperid).count()
+  strpaper = json.dumps(claPaper(paper[0].pid, paper[0].pname, paper[0].teaname,
+    paper[0].penabled, str(stulist['count']), str(prolist['problem_count']), subcount),
+    default=lambda o: o.__dict__, sort_keys=True)
+  jsonpaper = json.loads(strpaper)
   ret = {'code': 200, 'info': jsonpaper, 'paper': prolist, 'stulist': stulist }
   return HttpResponse(json.dumps(ret), content_type="application/json")
 
@@ -213,20 +218,11 @@ def get_test_detail(request):
     paperid = request.GET.get('paperid')
     db = Paper.objects.get(pid = paperid)
     paper_pro = json.loads(db.prolist)
-    '''
-    print(db.prolist)
-    test = ph.Paper2test(paper_pro)
-    '''
+    test = ph.Paper2Test(paper_pro)
     ###
-    
-    test = {
-      'test_problem': [
-        { 'id': '1','problem': '1+1=?','type': 'keguan','point': '5','option1': '5','option2': '2','option3': '4','option4': '3','answer': '',},
-        { 'id': '2','problem': '你好吗？','type': 'zhuguan','point': '10','option1': '','option2': '','option3': '','option4': '','answer': '',}
-      ] 
-    }
+    subcount = TestRecord.objects.filter(paperid = paperid).count()
     test_info = json.dumps(claPaper(db.pid, db.pname, db.teaname, db.penabled,
-      'stulist', 'prolist'), default=lambda o: o.__dict__, sort_keys=True)
+      'notused', 'notused', str(subcount)), default=lambda o: o.__dict__, sort_keys=True)
     test_info = json.loads(test_info)
     #print(test)
     ret = {'code': 200, 'info': 'ok', 'test': test, 'test_info': test_info }
@@ -234,8 +230,73 @@ def get_test_detail(request):
   # POST method means submitting answers
   elif request.method == 'POST':
     postjson = jh.post2json(request)
-    # WAIT: given postjson and get the new json with only answer, id, type, point
-    print(postjson['test']['test_problem'])
-    ret = {'code': 200, 'info': 'ok', 'stu': request.session['login_name'], 'pname': postjson['pname']}
+    print(postjson)
+    # given postjson and get the new json with only answer, id, type, point
+    answers = ph.ExtractAnswers(postjson['test'])
+    print(answers)
+    stuname = request.session['login_name']
+    paperid = postjson['paperid']
+    if TestRecord.objects.filter(Q(stuid = stuname) & Q(paperid = paperid)).count() > 0:
+      ret = {'code': 403, 'info': 'already exists', 'stu': stuname, 'pname': postjson['pname']}
+    else:
+      db = TestRecord(paperid = paperid, 
+        stuid = stuname,
+        submit_time = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time())),
+        answers = answers,
+        keguan_grade = -1,
+        keguan_detail = '',
+        zhuguan_grade = -1,
+        zhuguan_detail = '',
+        total_score = -1
+        )
+      db.save()
+      ret = {'code': 200, 'info': 'ok', 'stu': stuname, 'pname': postjson['pname']}
 
   return HttpResponse(json.dumps(ret), content_type="application/json")
+
+
+class claRecord:
+  def __init__(self, paperid, stuid, submit_time, answers, keguan_grade,
+    keguan_detail, zhuguan_grade, zhuguan_detail, total_score):
+    self.paperid = paperid
+    self.stuid = stuid
+    self.submit_time = submit_time
+    self.answers = answers
+    self.keguan_grade = keguan_grade
+    self.keguan_detail = keguan_detail
+    self.zhuguan_grade = zhuguan_grade
+    self.zhuguan_detail = zhuguan_detail
+    self.total_score = total_score
+
+  def __repr__(self):
+    return repr((self.paperid, self.stuid, self.submit_time, self.answers, self.keguan_grade,
+      self.keguan_detail, self.zhuguan_grade, self.zhuguan_detail, self.total_score))
+
+def judge_manage(request):
+  ret = {'code': 200, 'info': 'ok' }
+  postjson = jh.post2json(request)
+  action = postjson['action']
+  paperid = postjson['paperid']
+  ph = PaperHelper()
+  if action == 'getans':
+    ret = {'code': 200, 'info': 'ok' }
+    # TODO: build the list of all students' answers
+    retlist = []
+    print(paperid)
+    db = TestRecord.objects.filter(paperid = paperid)
+    for var in db:
+      print(var)
+      retlist.append(claRecord(var.paperid, var.stuid, var.submit_time, var.answers,
+        var.keguan_grade, var.keguan_detail, var.zhuguan_grade, var.zhuguan_detail, var.total_score))
+    jsonarr = json.dumps(retlist, default=lambda o: o.__dict__, sort_keys=True)
+    loadarr = json.loads(jsonarr)
+    ret = {'code': 200, 'info': 'ok', 'anslist': loadarr }
+    ###
+
+  elif action == 'delans':
+    ret = {'code': 200, 'info': 'ok' }
+    # TODO: delete the specified answer sheet from records
+    ###
+
+  return HttpResponse(json.dumps(ret), content_type="application/json")
+

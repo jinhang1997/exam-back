@@ -11,5 +11,10 @@ class UserListAdmin(admin.ModelAdmin):
 class PaperAdmin(admin.ModelAdmin):
     list_display = ['pid', 'pname', 'teaname', 'penabled', 'stulist', 'prolist']
 
+class TestRecordAdmin(admin.ModelAdmin):
+    list_display = ['paperid', 'stuid', 'submit_time', 'answers', 'keguan_grade',
+      'keguan_detail', 'zhuguan_grade', 'zhuguan_detail', 'total_score']
+
 admin.site.register(models.UserList, UserListAdmin)
 admin.site.register(models.Paper, PaperAdmin)
+admin.site.register(models.TestRecord, TestRecordAdmin)
