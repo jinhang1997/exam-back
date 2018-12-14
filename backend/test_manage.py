@@ -184,6 +184,8 @@ def modify_paper_stulist(request):
     for var in stuarray:
       # TODO(LOW): verify var(stuid) whether existing
       #
+      if (var == ''):
+        continue
       ph.AddStu(original_stulist, var)
       count += 1
     paperdb.stulist = json.dumps(original_stulist)
