@@ -163,6 +163,13 @@ def modify_paper_prolist(request):
     paperdb.save()
     ret = {'code': 200, 'paper': 'ok' }
 
+  elif action == 'delall':
+    paperid = postjson['paperid']
+    paperdb = Paper.objects.get(pid = paperid)
+    paperdb.prolist = json.dumps(ph.CreateProList())
+    paperdb.save()
+    ret = {'code': 200, 'paper': 'ok' }
+
   return HttpResponse(json.dumps(ret), content_type="application/json")
 
 
