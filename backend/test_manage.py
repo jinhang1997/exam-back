@@ -163,6 +163,13 @@ def modify_paper_prolist(request):
     paperdb.save()
     ret = {'code': 200, 'paper': 'ok' }
 
+  elif action == 'delall':
+    paperid = postjson['paperid']
+    paperdb = Paper.objects.get(pid = paperid)
+    paperdb.prolist = json.dumps(ph.CreateProList())
+    paperdb.save()
+    ret = {'code': 200, 'paper': 'ok' }
+
   return HttpResponse(json.dumps(ret), content_type="application/json")
 
 
@@ -184,6 +191,8 @@ def modify_paper_stulist(request):
     for var in stuarray:
       # TODO(LOW): verify var(stuid) whether existing
       #
+      if (var == ''):
+        continue
       ph.AddStu(original_stulist, var)
       count += 1
     paperdb.stulist = json.dumps(original_stulist)
