@@ -218,7 +218,7 @@ def modify_paper_stulist(request):
   return HttpResponse(json.dumps(ret), content_type="application/json")
 
 
-def get_test_detail(request):
+def test_manage(request):
   ph = PaperHelper()
   ret = {'code': 404, 'info': 'unknown method ' + request.method }
   # GET method means getting test problems
@@ -239,10 +239,11 @@ def get_test_detail(request):
   # POST method means submitting answers
   elif request.method == 'POST':
     postjson = jh.post2json(request)
-    print(postjson)
+    #print(postjson)
     # given postjson and get the new json with only answer, id, type, point
     answers = ph.ExtractAnswers(postjson['test'])
-    print(answers)
+    #print(answers)
+    answers = json.dumps(answers)
     stuname = request.session['login_name']
     paperid = postjson['paperid']
     if TestRecord.objects.filter(Q(stuid = stuname) & Q(paperid = paperid)).count() > 0:
@@ -291,10 +292,10 @@ def judge_manage(request):
     ret = {'code': 200, 'info': 'ok' }
     # TODO: build the list of all students' answers
     retlist = []
-    print(paperid)
+    #print(paperid)
     db = TestRecord.objects.filter(paperid = paperid)
     for var in db:
-      print(var)
+      #print(var)
       retlist.append(claRecord(var.paperid, var.stuid, var.submit_time, var.answers,
         var.keguan_grade, var.keguan_detail, var.zhuguan_grade, var.zhuguan_detail, var.total_score))
     jsonarr = json.dumps(retlist, default=lambda o: o.__dict__, sort_keys=True)
@@ -302,9 +303,11 @@ def judge_manage(request):
     ret = {'code': 200, 'info': 'ok', 'anslist': loadarr }
     ###
 
-  elif action == 'delans':
+  elif action == 'delans': 
+    # delete the specified answer sheet from records
+    stuname = postjson['stuname']
+    TestRecord.objects.filter(Q(stuid = stuname) & Q(paperid = paperid)).delete()
     ret = {'code': 200, 'info': 'ok' }
-    # TODO: delete the specified answer sheet from records
     ###
 
   return HttpResponse(json.dumps(ret), content_type="application/json")

@@ -38,7 +38,8 @@ urlpatterns = [
     url(r'^paper-get-detail/', test_manage.get_paper_detail),
     url(r'^paper-prolist/', test_manage.modify_paper_prolist),
     url(r'^paper-stulist/', test_manage.modify_paper_stulist),
-    url(r'^test-manage/', test_manage.get_test_detail),
+    
+    url(r'^test-manage/', test_manage.test_manage),
     url(r'^judge-manage/', test_manage.judge_manage),
 
     url(r'^my-info/', login_manage.myinfo),
