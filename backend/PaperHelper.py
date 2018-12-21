@@ -163,7 +163,7 @@ class PaperHelper:
         }
         return result_sum
 
-    def GetZhuguan(self, answer_list, problem_list):
+    def GetZhuguan(self, answer_list):
         answers = answer_list['answer_list']
         zhuguan_list = []
         for answer in answers:
