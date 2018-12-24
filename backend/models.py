@@ -28,4 +28,5 @@ class TestRecord(models.Model):
   zhuguan_grade = models.IntegerField()
   zhuguan_detail = models.CharField(max_length = 10240)
   total_score = models.IntegerField()
+  confirmed = models.CharField(max_length = 20)
 

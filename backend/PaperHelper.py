@@ -166,10 +166,12 @@ class PaperHelper:
     def GetZhuguan(self, answer_list):
         answers = answer_list['answer_list']
         zhuguan_list = []
+        count = 0
         for answer in answers:
             if (answer['type'] == 'zhuguan'):
                 zhuguan_list.append(answer)
-        return {"zhuguan_list":zhuguan_list}
+                count += 1
+        return {"count": count, "zhuguan_list": zhuguan_list}
 
     if __name__ == '__main__':
         pass
