@@ -311,7 +311,7 @@ def judge_manage(request):
   return HttpResponse(json.dumps(ret), content_type="application/json")
 
 
-def judge_cmd(request): 
+def judge_keguan(request): 
   postjson = jh.post2json(request)
   action = postjson['action']
   paperid = postjson['paperid']
@@ -351,3 +351,12 @@ def judge_cmd(request):
 
   return HttpResponse(json.dumps(ret), content_type="application/json")
 
+
+def judge_zhuguan(request): 
+  postjson = jh.post2json(request)
+  action = postjson['action']
+  paperid = postjson['paperid']
+  ph = PaperHelper()
+  ret = {'code': 404, 'info': 'unknown action ' + action }
+
+  return HttpResponse(json.dumps(ret), content_type="application/json")

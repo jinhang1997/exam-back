@@ -41,7 +41,8 @@ urlpatterns = [
     
     url(r'^test-manage/', test_manage.test_manage),
     url(r'^judge-manage/', test_manage.judge_manage),
-    url(r'^judge-cmd/', test_manage.judge_cmd),
+    url(r'^judge-keguan/', test_manage.judge_keguan),
+    url(r'^judge-zhuguan/', test_manage.judge_zhuguan),
 
     url(r'^my-info/', login_manage.myinfo),
     url(r'^user-list/', login_manage.get_all_user),
