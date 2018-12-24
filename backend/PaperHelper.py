@@ -3,6 +3,7 @@
 import json
 import random
 
+
 class PaperHelper:
 
     def __init__(self):
@@ -161,6 +162,14 @@ class PaperHelper:
             'keguan_detail': results
         }
         return result_sum
+
+    def GetZhuguan(self, answer_list):
+        answers = answer_list['answer_list']
+        zhuguan_list = []
+        for answer in answers:
+            if (answer['type'] == 'zhuguan'):
+                zhuguan_list.append(answer)
+        return {"zhuguan_list":zhuguan_list}
 
     if __name__ == '__main__':
         pass
