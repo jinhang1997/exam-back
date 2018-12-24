@@ -290,12 +290,10 @@ def judge_manage(request):
   ph = PaperHelper()
   if action == 'getans':
     ret = {'code': 200, 'info': 'ok' }
-    # TODO: build the list of all students' answers
+    # build the list of all students' answers
     retlist = []
-    #print(paperid)
     db = TestRecord.objects.filter(paperid = paperid)
     for var in db:
-      #print(var)
       retlist.append(claRecord(var.paperid, var.stuid, var.submit_time, var.answers,
         var.keguan_grade, var.keguan_detail, var.zhuguan_grade, var.zhuguan_detail, var.total_score))
     jsonarr = json.dumps(retlist, default=lambda o: o.__dict__, sort_keys=True)
@@ -309,6 +307,47 @@ def judge_manage(request):
     TestRecord.objects.filter(Q(stuid = stuname) & Q(paperid = paperid)).delete()
     ret = {'code': 200, 'info': 'ok' }
     ###
+
+  return HttpResponse(json.dumps(ret), content_type="application/json")
+
+
+def judge_cmd(request): 
+  postjson = jh.post2json(request)
+  action = postjson['action']
+  paperid = postjson['paperid']
+  ph = PaperHelper()
+  ret = {'code': 404, 'info': 'unknown action ' + action }
+
+  if action == 'judge_keguan':
+    # take out each submit and compare with normal answer
+    # then save the result into the model.
+    paper = Paper.objects.get(pid = paperid)
+    answerlist = TestRecord.objects.filter(paperid = paperid)
+    for var in answerlist:
+      #print(var.answers)
+      score = ph.JudgeKeguan(json.loads(var.answers), json.loads(paper.prolist))
+      print(score)
+      record = TestRecord.objects.get(Q(stuid = var.stuid) & Q(paperid = paperid))
+      record.keguan_grade = score['keguan_score']
+      record.keguan_detail = score['keguan_detail']
+      record.save()
+      pass
+
+    ret = {'code': 200, 'info': 'ok'}
+    ###
+    pass
+
+  elif action == 'clean_keguan':
+    answerlist = TestRecord.objects.filter(paperid = paperid)
+    for var in answerlist:
+      #print(var.answers)
+      record = TestRecord.objects.get(Q(stuid = var.stuid) & Q(paperid = paperid))
+      record.keguan_grade = -1
+      record.keguan_detail = ""
+      record.save()
+      ret = {'code': 200, 'info': 'ok'}
+      pass
+    pass
 
   return HttpResponse(json.dumps(ret), content_type="application/json")
 
