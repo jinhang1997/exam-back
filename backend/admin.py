@@ -13,7 +13,7 @@ class PaperAdmin(admin.ModelAdmin):
 
 class TestRecordAdmin(admin.ModelAdmin):
     list_display = ['paperid', 'stuid', 'submit_time', 'answers', 'keguan_grade',
-      'keguan_detail', 'zhuguan_grade', 'zhuguan_detail', 'total_score']
+      'keguan_detail', 'zhuguan_grade', 'zhuguan_detail', 'total_score', 'confirmed']
 
 admin.site.register(models.UserList, UserListAdmin)
 admin.site.register(models.Paper, PaperAdmin)
