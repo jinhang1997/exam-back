@@ -330,8 +330,8 @@ def judge_keguan(request):
       score = ph.JudgeKeguan(json.loads(var.answers), json.loads(paper.prolist))
       #print(score)
       record = TestRecord.objects.get(Q(stuid = var.stuid) & Q(paperid = paperid))
-      record.keguan_grade = json.dumps(score['keguan_score'])
-      record.keguan_detail = json.dumps(score['keguan_detail'])
+      record.keguan_grade = json.dumps(score['score'])
+      record.keguan_detail = json.dumps(score['detail'])
       record.save()
       pass
     ret = {'code': 200, 'info': 'ok'}
@@ -364,15 +364,22 @@ def judge_zhuguan(request):
     stuid = postjson['stuid']
     student = TestRecord.objects.get(Q(stuid = stuid) & Q(paperid = paperid))
     zhuguan = ph.GetZhuguan(json.loads(student.answers))
+    judge = {}
+    has_judge = 0
+    if student.zhuguan_grade != -1:
+      judge = student.zhuguan_detail
+      judge = json.loads(judge)
+      has_judge = 1
     #print(zhuguan)
-    ret = {'code': 200, 'count': zhuguan['count'], 'list': zhuguan['zhuguan_list']}
+    ret = {'code': 200, 'count': zhuguan['count'], 'list': zhuguan['zhuguan_list'],
+      'has_judge': has_judge, 'judge': judge}
     pass
 
   elif action == 'submit':
     stuid = postjson['stuid']
     record = TestRecord.objects.get(Q(stuid = stuid) & Q(paperid = paperid))
-    record.zhuguan_grade = json.dumps(postjson['zhuguan_score'])
-    record.zhuguan_detail = json.dumps(postjson['zhuguan_detail'])
+    record.zhuguan_grade = json.dumps(postjson['score'])
+    record.zhuguan_detail = json.dumps(postjson['detail'])
     record.save()
     ret = {'code': 200, 'info': 'ok'}
     pass
@@ -386,6 +393,20 @@ def judge_zhuguan(request):
       record.zhuguan_detail = ""
       record.save()
       ret = {'code': 200, 'info': 'ok'}
+    pass
+
+  elif action == 'getpro':
+    paper = Paper.objects.get(pid = paperid)
+    pro = ph.GetProb(json.loads(paper.prolist)['question_list'], postjson['proid'])
+    ret = {'code': 200, 'problem': pro['problem'], 'right': pro['right']}
+    pass
+
+  elif action == 'nextid':
+    records = TestRecord.objects.filter(Q(paperid = paperid) & Q(zhuguan_grade = -1))
+    if records.count() == 0:
+      ret = {'code': 201, 'info': 'no next student is found' }
+    else:
+      ret = {'code': 200, 'nextid': records[0].stuid }
     pass
 
   return HttpResponse(json.dumps(ret), content_type="application/json")

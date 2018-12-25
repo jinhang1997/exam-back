@@ -158,7 +158,7 @@ class PaperHelper:
                     }
                 results.append(result)
         result_sum = {
-            'keguan_score': score,
+            'score': score,
             'detail': results
         }
         return result_sum
