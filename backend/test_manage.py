@@ -297,7 +297,7 @@ def judge_manage(request):
     for var in db:
       retlist.append(claRecord(var.paperid, var.stuid, var.submit_time, var.answers,
         var.keguan_grade, var.keguan_detail, var.zhuguan_grade, var.zhuguan_detail,
-        var.total_score, 'no'))
+        var.total_score, var.confirmed))
     jsonarr = json.dumps(retlist, default=lambda o: o.__dict__, sort_keys=True)
     loadarr = json.loads(jsonarr)
     ret = {'code': 200, 'info': 'ok', 'anslist': loadarr }
@@ -306,9 +306,20 @@ def judge_manage(request):
   elif action == 'delans': 
     # delete the specified answer sheet from records
     stuname = postjson['stuname']
-    TestRecord.objects.filter(Q(stuid = stuname) & Q(paperid = paperid)).delete()
+    TestRecord.objects.filter(Q(stuid = stuname) & Q(paperid = paperid) & Q(confirmed = 'no')).delete()
     ret = {'code': 200, 'info': 'ok' }
     ###
+
+  elif action == 'submit':
+    records = TestRecord.objects.filter(Q(paperid = paperid) & Q(confirmed = 'no'))
+    for var in records:
+      record = TestRecord.objects.get(Q(stuid = var.stuid) & Q(paperid = paperid) & Q(confirmed = 'no'))
+      record.confirmed = 'yes'
+      record.total_score = record.keguan_grade + record.zhuguan_grade
+      record.save()
+      pass
+    ret = {'code': 200, 'info': 'ok' }
+    pass
 
   return HttpResponse(json.dumps(ret), content_type="application/json")
 
@@ -342,16 +353,6 @@ def judge_keguan(request):
     answerlist = TestRecord.objects.filter(Q(paperid = paperid) 
       & Q(confirmed = 'no')).update(keguan_grade = -1, keguan_detail = "")
     ret = {'code': 200, 'info': 'ok'}
-    '''
-    for var in answerlist:
-      #print(var.answers)
-      record = TestRecord.objects.get(Q(stuid = var.stuid) & Q(paperid = paperid) & Q(confirmed = 'no'))
-      record.keguan_grade = -1
-      record.keguan_detail = ""
-      record.save()
-      ret = {'code': 200, 'info': 'ok'}
-      pass
-    '''
     pass
 
   return HttpResponse(json.dumps(ret), content_type="application/json")
