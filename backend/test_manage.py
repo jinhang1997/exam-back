@@ -324,12 +324,12 @@ def judge_keguan(request):
     # take out each submit and compare with normal answer
     # then save the result into the model.
     paper = Paper.objects.get(pid = paperid)
-    answerlist = TestRecord.objects.filter(paperid = paperid)
+    answerlist = TestRecord.objects.filter(Q(paperid = paperid) & Q(confirmed = 'no'))
     for var in answerlist:
       #print(var.answers)
       score = ph.JudgeKeguan(json.loads(var.answers), json.loads(paper.prolist))
       #print(score)
-      record = TestRecord.objects.get(Q(stuid = var.stuid) & Q(paperid = paperid))
+      record = TestRecord.objects.get(Q(stuid = var.stuid) & Q(paperid = paperid) & Q(confirmed = 'no'))
       record.keguan_grade = json.dumps(score['score'])
       record.keguan_detail = json.dumps(score['detail'])
       record.save()
@@ -339,15 +339,19 @@ def judge_keguan(request):
     pass
 
   elif action == 'clean_keguan':
-    answerlist = TestRecord.objects.filter(paperid = paperid)
+    answerlist = TestRecord.objects.filter(Q(paperid = paperid) 
+      & Q(confirmed = 'no')).update(keguan_grade = -1, keguan_detail = "")
+    ret = {'code': 200, 'info': 'ok'}
+    '''
     for var in answerlist:
       #print(var.answers)
-      record = TestRecord.objects.get(Q(stuid = var.stuid) & Q(paperid = paperid))
+      record = TestRecord.objects.get(Q(stuid = var.stuid) & Q(paperid = paperid) & Q(confirmed = 'no'))
       record.keguan_grade = -1
       record.keguan_detail = ""
       record.save()
       ret = {'code': 200, 'info': 'ok'}
       pass
+    '''
     pass
 
   return HttpResponse(json.dumps(ret), content_type="application/json")
@@ -371,13 +375,13 @@ def judge_zhuguan(request):
       judge = json.loads(judge)
       has_judge = 1
     #print(zhuguan)
-    ret = {'code': 200, 'count': zhuguan['count'], 'list': zhuguan['zhuguan_list'],
-      'has_judge': has_judge, 'judge': judge}
+    ret = { 'code': 200, 'count': zhuguan['count'], 'list': zhuguan['zhuguan_list'],
+      'has_judge': has_judge, 'judge': judge, 'confirmed': student.confirmed }
     pass
 
   elif action == 'submit':
     stuid = postjson['stuid']
-    record = TestRecord.objects.get(Q(stuid = stuid) & Q(paperid = paperid))
+    record = TestRecord.objects.get(Q(stuid = stuid) & Q(paperid = paperid) & Q(confirmed = 'no'))
     record.zhuguan_grade = json.dumps(postjson['score'])
     record.zhuguan_detail = json.dumps(postjson['detail'])
     record.save()
@@ -385,14 +389,9 @@ def judge_zhuguan(request):
     pass
 
   elif action == 'clean_zhuguan':
-    answerlist = TestRecord.objects.filter(paperid = paperid)
-    for var in answerlist:
-      #print(var.answers)
-      record = TestRecord.objects.get(Q(stuid = var.stuid) & Q(paperid = paperid))
-      record.zhuguan_grade = -1
-      record.zhuguan_detail = ""
-      record.save()
-      ret = {'code': 200, 'info': 'ok'}
+    answerlist = TestRecord.objects.filter(Q(paperid = paperid) 
+      & Q(confirmed = 'no')).update(zhuguan_grade = -1, zhuguan_detail = "")
+    ret = {'code': 200, 'info': 'ok'}
     pass
 
   elif action == 'getpro':
@@ -402,7 +401,7 @@ def judge_zhuguan(request):
     pass
 
   elif action == 'nextid':
-    records = TestRecord.objects.filter(Q(paperid = paperid) & Q(zhuguan_grade = -1))
+    records = TestRecord.objects.filter(Q(paperid = paperid) & Q(zhuguan_grade = -1) & Q(confirmed = 'no'))
     if records.count() == 0:
       ret = {'code': 201, 'info': 'no next student is found' }
     else:
