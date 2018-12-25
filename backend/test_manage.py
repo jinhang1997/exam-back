@@ -33,19 +33,29 @@ class claPaper:
 def get_stu_testlist(request):
   ret = {'code': 404, 'info': 'unknown error' }
   ph = PaperHelper()
-  # TODO: take out each test and test if the given student is in which tests
+  stuid = request.session['login_name']
+  # get the list of submitted papers
+  test_taken = TestRecord.objects.filter(stuid = stuid)
+  takenlist = []
+  obj = {}
+  for var in test_taken:
+    obj['pid'] = var.paperid
+    takenlist.append(obj)
+    pass
+  # take out each test and test if the given student is in which tests
   all_paper = Paper.objects.all()
   retlist = []
   for paper in all_paper:
     sl = json.loads(paper.stulist)
-    if ph.ExistStu(sl, request.session['login_name']) == True:
-      print("[%s] is in paper [%s]." % (request.session['login_name'], paper.pid))
+    if ph.ExistStu(sl, stuid) == True:
+      #print("[%s] is in paper [%s]." % (stuid, paper.pid))
       stucount = json.loads(paper.stulist)['count']
       procount = json.loads(paper.prolist)['problem_count']
-      retlist.append(claPaper(paper.pid, paper.pname, paper.teaname, paper.penabled, str(stucount), str(procount), 'unseen'))
+      retlist.append(claPaper(paper.pid, paper.pname, paper.teaname, paper.penabled, 
+        str(stucount), str(procount), 'unseen'))
   jsonarr = json.dumps(retlist, default=lambda o: o.__dict__, sort_keys=True)
   loadarr = json.loads(jsonarr)
-  ret = {'code': 200, 'list': loadarr }
+  ret = {'code': 200, 'list': loadarr, 'taken': takenlist }
   ###
   return HttpResponse(json.dumps(ret), content_type="application/json")
 
