@@ -284,7 +284,8 @@ def test_manage(request):
         keguan_detail = '',
         zhuguan_grade = -1,
         zhuguan_detail = '',
-        total_score = -1
+        total_score = -1,
+        confirmed = 'no'
         )
       db.save()
       ret = {'code': 200, 'info': 'ok', 'stu': stuname, 'pname': postjson['pname']}
