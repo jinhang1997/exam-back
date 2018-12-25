@@ -159,7 +159,7 @@ class PaperHelper:
                 results.append(result)
         result_sum = {
             'keguan_score': score,
-            'keguan_detail': results
+            'detail': results
         }
         return result_sum
 
@@ -172,6 +172,24 @@ class PaperHelper:
                 zhuguan_list.append(answer)
                 count += 1
         return {"count": count, "zhuguan_list": zhuguan_list}
+
+    def MixAnsGrade(self, answer_list, score_list):
+        grades = score_list['detail']
+        answers = answer_list['answer_list']
+        mix_list = []
+        count = 0
+        for grade in grades:
+            id = grade['id']
+            answer = self.GetProb(answers, id)
+            detail = {
+                'id': answer['id'],
+                'point': answer['point'],
+                'type': answer['type'],
+                'answer': answer['answer'],
+                'grade': grade['grade']
+            }
+            mix_list.append(grade)
+        return {'count': count, 'mix_list': mix_list}
 
     if __name__ == '__main__':
         pass
