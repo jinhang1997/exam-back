@@ -61,7 +61,24 @@ def get_stu_testlist(request):
 
 
 def get_history(request):
-  ret = {'code': 200, 'list': 'test history of [%s]' % (request.session['login_name']) }
+  stuid = request.session['login_name']
+  records = TestRecord.objects.filter(stuid = stuid)
+  obj = {}
+  takenlist = []
+  for var in records:
+    paper = Paper.objects.get(Q(pid = var.paperid))
+    obj['pid'] = var.paperid
+    obj['pname'] = paper.pname
+    obj['teaname'] = paper.teaname
+    obj['subtime'] = var.submit_time
+    obj['confirmed'] = var.confirmed
+    if var.confirmed == 'yes':
+      obj['grade'] = var.total_score
+    else:
+      obj['grade'] = -1
+    takenlist.append(obj)
+    pass
+  ret = {'code': 200, 'list': takenlist }
   return HttpResponse(json.dumps(ret), content_type="application/json")
 
 

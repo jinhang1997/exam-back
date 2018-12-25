@@ -30,8 +30,7 @@ urlpatterns = [
     url(r'^login/', login_manage.login),
     url(r'^logout/', login_manage.logout),
 
-    #url(r'^test-list-ava/', test_manage.get_avaliable),
-    #url(r'^test-history/', test_manage.get_history),
+    url(r'^test-history/', test_manage.get_history),
     url(r'^paper-get-list-stu/', test_manage.get_stu_testlist),
     url(r'^paper-get-list-tea/', test_manage.get_tea_testlist),
     url(r'^paper-manage/', test_manage.manage_paper),
