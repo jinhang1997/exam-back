@@ -37,17 +37,25 @@ def get_stu_testlist(request):
   # get the list of submitted papers
   test_taken = TestRecord.objects.filter(stuid = stuid)
   takenlist = []
-  obj = {}
   for var in test_taken:
-    obj['pid'] = var.paperid
+    obj = {
+      'pid': var.paperid
+    }
     takenlist.append(obj)
     pass
   # take out each test and test if the given student is in which tests
   all_paper = Paper.objects.all()
   retlist = []
   for paper in all_paper:
+    # skip the paper if the student had taken the test
+    taken_this = False
+    for var in takenlist:
+      if var['pid'] == paper.pid:
+        taken_this = True
+      pass
+    ###
     sl = json.loads(paper.stulist)
-    if ph.ExistStu(sl, stuid) == True:
+    if ph.ExistStu(sl, stuid) == True and taken_this == False:
       #print("[%s] is in paper [%s]." % (stuid, paper.pid))
       stucount = json.loads(paper.stulist)['count']
       procount = json.loads(paper.prolist)['problem_count']
@@ -63,21 +71,22 @@ def get_stu_testlist(request):
 def get_history(request):
   stuid = request.session['login_name']
   records = TestRecord.objects.filter(stuid = stuid)
-  obj = {}
   takenlist = []
   for var in records:
-    paper = Paper.objects.get(Q(pid = var.paperid))
-    obj['pid'] = var.paperid
-    obj['pname'] = paper.pname
-    obj['teaname'] = paper.teaname
-    obj['subtime'] = var.submit_time
-    obj['confirmed'] = var.confirmed
+    paper = Paper.objects.get(pid = var.paperid)
+    score = -1;
     if var.confirmed == 'yes':
-      obj['grade'] = var.total_score
-    else:
-      obj['grade'] = -1
+      score = var.total_score
+    obj = {
+      'pid': var.paperid,
+      'pname': paper.pname,
+      'teaname': paper.teaname,
+      'subtime': var.submit_time,
+      'confirmed': var.confirmed,
+      'grade': score
+    }
     takenlist.append(obj)
-    pass
+
   ret = {'code': 200, 'list': takenlist }
   return HttpResponse(json.dumps(ret), content_type="application/json")
 
