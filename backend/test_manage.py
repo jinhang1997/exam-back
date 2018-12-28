@@ -447,3 +447,21 @@ def judge_zhuguan(request):
     pass
 
   return HttpResponse(json.dumps(ret), content_type="application/json")
+
+
+def upload_prolist(request):
+  ret = {'code': 403, 'info': 'denied method ' + request.method }
+  if request.method == 'POST':
+    obj = request.FILES.get('file')
+    print(obj)
+    save_path = os.path.join(settings.BASE_DIR, 'upload.xls')
+    print(save_path)
+    f = open(save_path, 'wb')
+    for chunk in obj.chunks():
+      f.write(chunk)
+    f.close()
+    ret = {'code': 200, 'info': 'ok' }
+    pass
+
+  return HttpResponse(json.dumps(ret), content_type="application/json")
+
