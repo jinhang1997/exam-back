@@ -14,6 +14,10 @@ import os
 import time
 from backend.PaperHelper import PaperHelper
 from backend import json_helper as jh
+import xlrd
+import sys
+reload(sys)
+sys.setdefaultencoding('utf-8')
 
 class claPaper:
   def __init__(self, pid, pname, teaname, penabled, stulist, prolist, submitted):
@@ -451,15 +455,60 @@ def judge_zhuguan(request):
 
 def upload_prolist(request):
   ret = {'code': 403, 'info': 'denied method ' + request.method }
+  ph = PaperHelper()
+
   if request.method == 'POST':
+    # acquire paperid from form
+    paperid = request.POST.get('paperid')
     obj = request.FILES.get('file')
-    print(obj)
+    paperdb = Paper.objects.get(pid = paperid)
+    original_prolist = json.loads(paperdb.prolist)
+
+    # acquire file from form
+    obj = request.FILES.get('file')
     save_path = os.path.join(settings.BASE_DIR, 'upload.xls')
-    print(save_path)
+    #print(save_path)
     f = open(save_path, 'wb')
     for chunk in obj.chunks():
       f.write(chunk)
     f.close()
+
+    # read the xls file and load problems
+    x1 = xlrd.open_workbook(save_path)
+    sheet1 = x1.sheet_by_name("Sheet1")
+    line = 3
+    while line <= 50 and line < sheet1.nrows:
+      if sheet1.cell_value(line, 0) == "":
+        break
+      #print(sheet1.cell_value(line, 0))
+      problem = str(sheet1.cell_value(line, 0))
+      ptype = str(sheet1.cell_value(line, 1))
+      if ptype == '主观题':
+        ptype = 'zhuguan'
+      else:
+        ptype = 'keguan'
+      point = str(int(sheet1.cell_value(line, 2)))
+      right = str(sheet1.cell_value(line, 3))
+      right = str(sheet1.cell_value(line, 3))
+      wrong1 = str(sheet1.cell_value(line, 4))
+      wrong2 = str(sheet1.cell_value(line, 5))
+      wrong3 = str(sheet1.cell_value(line, 6))
+      ph.AddPro(original_prolist, problem, ptype, point, right, wrong1, wrong2, wrong3)
+      paperdb.prolist = json.dumps(original_prolist)
+      line += 1
+
+    paperdb.save()
+    '''
+    paperdb = Paper.objects.get(pid = paperid)
+    original_prolist = json.loads(paperdb.prolist)
+    ph.AddPro(original_prolist, problem["problem"], problem["ptype"], problem["point"],
+     problem["right"], problem["wrong1"], problem["wrong2"], problem["wrong3"])
+    paperdb.prolist = json.dumps(original_prolist)
+    paperdb.save()
+    '''
+
+    # delete file after used
+    os.remove(save_path)
     ret = {'code': 200, 'info': 'ok' }
     pass
 
