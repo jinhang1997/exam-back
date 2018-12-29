@@ -487,8 +487,7 @@ def upload_prolist(request):
         ptype = 'zhuguan'
       else:
         ptype = 'keguan'
-      point = str(int(sheet1.cell_value(line, 2)))
-      right = str(sheet1.cell_value(line, 3))
+      point = int(sheet1.cell_value(line, 2))
       right = str(sheet1.cell_value(line, 3))
       wrong1 = str(sheet1.cell_value(line, 4))
       wrong2 = str(sheet1.cell_value(line, 5))
