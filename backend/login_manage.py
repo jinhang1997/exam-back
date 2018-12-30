@@ -11,6 +11,11 @@ from backend.models import UserList
 from backend import global_vars
 import json
 import os
+import xlrd
+import sys
+reload(sys)
+sys.setdefaultencoding('utf-8')
+
 
 def login(request):
   # POST means trying to login
@@ -53,9 +58,11 @@ def login(request):
   else:
     return HttpResponse("This request is invalid.")
 
+
 def myinfo(request):
   ret = {'code': 200, 'info': 'your personal info' }
   return HttpResponse(json.dumps(ret), content_type="application/json")
+
 
 class User:
   def __init__(self, username, password, usertype):
@@ -64,6 +71,7 @@ class User:
     self.usertype = usertype
   def __repr__(self):
     return repr((self.username, self.password, self.usertype))
+
 
 def get_all_user(request):
   userlist = UserList.objects.all()
@@ -79,12 +87,14 @@ def get_all_user(request):
   #print (retdata)
   return HttpResponse(json.dumps(retdata), content_type="application/json")
 
+
 def if_user_exist(uname):
   #print(uname)
   if UserList.objects.filter(username = uname).count() > 0:
     return True
   else:
     return False
+
 
 def add_user(request):
   uname = request.POST.get('username')
@@ -97,6 +107,7 @@ def add_user(request):
   database.save()
   status = {'code': 200, 'info': uname }
   return HttpResponse(json.dumps(status), content_type="application/json")
+
 
 def add_user_batch(request):
   #print(request.POST.get('batch_names'))
@@ -117,6 +128,7 @@ def add_user_batch(request):
   status = {'code': 200, 'info': success_count }
   return HttpResponse(json.dumps(status), content_type="application/json")
 
+
 def delete_user(request):
   user_to_del = request.POST.get('username')
   print (user_to_del)
@@ -125,6 +137,7 @@ def delete_user(request):
   UserList.objects.filter(username = user_to_del).delete()
   status = {'code': 200, 'info': user_to_del }
   return HttpResponse(json.dumps(status), content_type="application/json")
+
 
 def logout(request):
   try:
@@ -136,3 +149,67 @@ def logout(request):
 
   status = {'code': 200, 'info': outname }
   return HttpResponse(json.dumps(status), content_type="application/json")
+
+
+def upload_user(request):
+  ret = {'code': 403, 'info': 'denied method ' + request.method }
+
+  if request.method == 'POST':
+    # acquire paperid from form
+    obj = request.FILES.get('file')
+
+    # acquire file from form
+    obj = request.FILES.get('file')
+    save_path = os.path.join(settings.BASE_DIR, 'upload.xls')
+    #print(save_path)
+    f = open(save_path, 'wb')
+    for chunk in obj.chunks():
+      f.write(chunk)
+    f.close()
+
+    # read the xls file and load problems
+    x1 = xlrd.open_workbook(save_path)
+    sheet1 = x1.sheet_by_name("Sheet1")
+    line = 4
+    while line <= 50 and line < sheet1.nrows:
+      if sheet1.cell_value(line, 0) == "":
+        break
+      uname = str(sheet1.cell_value(line, 0))
+      utype = str(sheet1.cell_value(line, 1))
+      passwd = str(sheet1.cell_value(line, 2))
+      if utype == '教师':
+        utype = 'teacher'
+      else:
+        utype = 'student'
+      if if_user_exist(uname) == True:
+        line += 1
+        continue
+      print(uname + '#' + passwd + '#' + utype)
+      new_record = UserList(username = uname, password = passwd, usertype = utype)
+      new_record.save()
+      line += 1
+      '''
+      problem = str(sheet1.cell_value(line, 0))
+      ptype = str(sheet1.cell_value(line, 1))
+      if ptype == '主观题':
+        ptype = 'zhuguan'
+      else:
+        ptype = 'keguan'
+      point = int(sheet1.cell_value(line, 2))
+      right = str(sheet1.cell_value(line, 3))
+      wrong1 = str(sheet1.cell_value(line, 4))
+      wrong2 = str(sheet1.cell_value(line, 5))
+      wrong3 = str(sheet1.cell_value(line, 6))
+      ph.AddPro(original_prolist, problem, ptype, point, right, wrong1, wrong2, wrong3)
+      paperdb.prolist = json.dumps(original_prolist)
+      line += 1
+      '''
+
+    #paperdb.save()
+
+    # delete file after used
+    os.remove(save_path)
+    ret = {'code': 200, 'info': 'ok' }
+    pass
+
+  return HttpResponse(json.dumps(ret), content_type="application/json")
